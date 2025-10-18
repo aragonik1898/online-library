@@ -1,0 +1,160 @@
+@startuml Class Diagram
+!theme plain
+title Диаграмма классов
+
+package "Models" {
+    class Book {
+        +int Id
+        +string Title
+        +string Description
+        +int PublicationYear
+        +string FilePath
+        +string FileName
+        +DateTime CreatedDate
+        +DateTime UpdatedDate
+        +int AuthorId
+        +int GenreId
+        +Author Author
+        +Genre Genre
+        +ICollection<Bookmark> Bookmarks
+        +ICollection<BookLoan> Loans
+    }
+
+    class Author {
+        +int Id
+        +string FirstName
+        +string LastName
+        +string Biography
+        +DateTime CreatedDate
+        +ICollection<Book> Books
+        +string FullName
+    }
+
+    class Genre {
+        +int Id
+        +string Name
+        +string Description
+        +DateTime CreatedDate
+        +ICollection<Book> Books
+    }
+
+    class Bookmark {
+        +int Id
+        +string Title
+        +string Description
+        +int? PageNumber
+        +string Quote
+        +DateTime CreatedDate
+        +string UserId
+        +int BookId
+        +ApplicationUser User
+        +Book Book
+    }
+
+    class BookLoan {
+        +int Id
+        +DateTime LoanDate
+        +DateTime DueDate
+        +DateTime? ReturnDate
+        +string UserId
+        +int BookId
+        +ApplicationUser User
+        +Book Book
+    }
+
+    class ApplicationUser {
+        +string Id
+        +string UserName
+        +string Email
+        +string FirstName
+        +string LastName
+        +DateTime CreatedDate
+        +ICollection<Bookmark> Bookmarks
+        +ICollection<BookLoan> Loans
+    }
+}
+
+package "Controllers" {
+    class BooksController {
+        -ApplicationDbContext _context
+        -ILogger<BooksController> _logger
+        +Index(int page, int pageSize)
+        +Details(int? id)
+        +Create()
+        +Create(Book book)
+        +Edit(int? id)
+        +Edit(int id, Book book)
+        +Delete(int? id)
+        +DeleteConfirmed(int id)
+    }
+
+    class AuthorsController {
+        -ApplicationDbContext _context
+        +Index(int page, int pageSize)
+        +Details(int? id)
+    }
+
+    class PersonalController {
+        -ApplicationDbContext _context
+        +Bookmarks(int page, int pageSize)
+        +AddBookmark(int bookId, string title)
+        +EditBookmark(int id, string title)
+        +DeleteBookmark(int id)
+    }
+
+    class ReadingController {
+        -ApplicationDbContext _context
+        -IFileService _fileService
+        +Read(int id)
+        +Upload()
+        +Upload(IFormFile file)
+    }
+}
+
+package "Services" {
+    class FileService {
+        -IWebHostEnvironment _environment
+        +SaveFileAsync(IFormFile file, string folder)
+        +DeleteFileAsync(string filePath)
+        +GetFileUrl(string fileName)
+    }
+
+    class PaginationService {
+        +GetPagedResult<T>(IQueryable<T> query, int page, int pageSize)
+    }
+}
+
+package "Data" {
+    class ApplicationDbContext {
+        +DbSet<Book> Books
+        +DbSet<Author> Authors
+        +DbSet<Genre> Genres
+        +DbSet<Bookmark> Bookmarks
+        +DbSet<BookLoan> Loans
+        +OnModelCreating(ModelBuilder builder)
+    }
+}
+
+' Relationships
+Book ||--|| Author : AuthorId
+Book ||--|| Genre : GenreId
+Bookmark ||--|| ApplicationUser : UserId
+Bookmark ||--|| Book : BookId
+BookLoan ||--|| ApplicationUser : UserId
+BookLoan ||--|| Book : BookId
+
+BooksController --> ApplicationDbContext
+AuthorsController --> ApplicationDbContext
+PersonalController --> ApplicationDbContext
+ReadingController --> ApplicationDbContext
+ReadingController --> FileService
+
+ApplicationDbContext --> Book
+ApplicationDbContext --> Author
+ApplicationDbContext --> Genre
+ApplicationDbContext --> Bookmark
+ApplicationDbContext --> BookLoan
+ApplicationDbContext --> ApplicationUser
+
+@enduml
+

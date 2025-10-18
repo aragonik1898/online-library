@@ -1,0 +1,144 @@
+@model Library.Models.PagedResult<Library.Models.Author>
+
+@{
+    ViewData["Title"] = "Авторы";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-user-tie me-2"></i>Авторы</h2>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Добавить автора
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model.Items.Any())
+        {
+            @foreach (var author in Model.Items)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-user fa-2x"></i>
+                                </div>
+                            </div>
+                            
+                            <h5 class="card-title text-center">@author.FullName</h5>
+                            
+                            @if (!string.IsNullOrEmpty(author.Country))
+                            {
+                                <p class="card-text text-center text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>@author.Country
+                                </p>
+                            }
+                            
+                            @if (author.BirthDate.HasValue)
+                            {
+                                <p class="card-text text-center text-muted small">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    @author.BirthDate.Value.Year
+                                    @if (author.DeathDate.HasValue)
+                                    {
+                                        <span> - @author.DeathDate.Value.Year</span>
+                                    }
+                                </p>
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(author.Biography))
+                            {
+                                <p class="card-text small text-muted">
+                                    @(author.Biography.Length > 100 ? author.Biography.Substring(0, 100) + "..." : author.Biography)
+                                </p>
+                            }
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a asp-action="Details" asp-route-id="@author.Id" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>Подробнее
+                                    </a>
+                                    <span class="badge bg-info">@author.Books.Count книг</span>
+                                </div>
+                                
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <div class="btn-group w-100 mt-2" role="group">
+                                        <a asp-action="Edit" asp-route-id="@author.Id" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@author.Id" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-user-tie fa-5x text-muted mb-3"></i>
+                    <h4 class="text-muted">Авторы не найдены</h4>
+                    <p class="text-muted">В библиотеке пока нет авторов</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Пагинация -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="mt-5 mb-4 px-3">
+            <nav aria-label="Пагинация авторов">
+                <ul class="pagination justify-content-center">
+                @if (Model.HasPreviousPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1 })">
+                            <i class="fas fa-chevron-left"></i> Предыдущая
+                        </a>
+                    </li>
+                }
+
+                @for (int i = Model.StartPage; i <= Model.EndPage; i++)
+                {
+                    <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                    </li>
+                }
+
+                @if (Model.HasNextPage)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1 })">
+                            Следующая <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                }
+                </ul>
+            </nav>
+
+            <div class="text-center text-muted mt-3">
+                <small>
+                    Показано @((Model.PageNumber - 1) * Model.PageSize + 1) - @(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount)) 
+                    из @Model.TotalCount авторов
+                </small>
+            </div>
+        </div>
+    }
+</div>
+
+

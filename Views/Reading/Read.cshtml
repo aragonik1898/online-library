@@ -1,0 +1,219 @@
+@model Library.Models.Book
+
+@{
+    ViewData["Title"] = "Чтение книги";
+    var book = ViewBag.Book as Library.Models.Book;
+    var fileUrl = ViewBag.FileUrl as string;
+    var contentType = ViewBag.ContentType as string;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Боковая панель с информацией о книге -->
+        <div class="col-md-3">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-book me-2"></i>@(book?.Title ?? "Неизвестная книга")
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        <i class="fas fa-user me-1"></i>@book.Author.FullName
+                    </p>
+                    <p class="text-muted">
+                        <i class="fas fa-tag me-1"></i>@book.Genre.Name
+                    </p>
+                    <p class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>@book.PublicationYear
+                    </p>
+                    
+                    @if (book.FileSize.HasValue)
+                    {
+                        <p class="text-muted">
+                            <i class="fas fa-file me-1"></i>@(book.FileSize.Value / 1024 / 1024) MB
+                        </p>
+                    }
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <a href="@Url.Action("Details", "Books", new { id = book.Id })" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i>Назад к книге
+                        </a>
+                        <a href="@Url.Action("Download", "Reading", new { id = book.Id })" class="btn btn-success">
+                            <i class="fas fa-download me-1"></i>Скачать книгу
+                        </a>
+                        <button type="button" class="btn btn-warning" onclick="addBookmark()">
+                            <i class="fas fa-bookmark me-1"></i>Добавить закладку
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="addToHistory()">
+                            <i class="fas fa-history me-1"></i>Добавить в историю
+                        </button>
+                        <a href="@Url.Action("Index", "Books")" class="btn btn-outline-secondary">
+                            <i class="fas fa-list me-1"></i>Каталог книг
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Область чтения -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <a href="@Url.Action("Details", "Books", new { id = book.Id })" class="btn btn-outline-secondary btn-sm me-3">
+                            <i class="fas fa-arrow-left me-1"></i>Назад
+                        </a>
+                        <h5 class="mb-0">Чтение книги</h5>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleFullscreen()">
+                            <i class="fas fa-expand me-1"></i>Полный экран
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="zoomIn()">
+                            <i class="fas fa-search-plus me-1"></i>Увеличить
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="zoomOut()">
+                            <i class="fas fa-search-minus me-1"></i>Уменьшить
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="reader-container" style="height: 80vh; overflow: auto;">
+                        @if (contentType == "application/pdf")
+                        {
+                            <embed src="@fileUrl" type="application/pdf" width="100%" height="100%" />
+                        }
+                        else if (contentType == "text/plain")
+                        {
+                            <iframe src="@fileUrl" width="100%" height="100%" frameborder="0"></iframe>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-file fa-5x text-muted mb-3"></i>
+                                <h4>Формат файла не поддерживается для чтения в браузере</h4>
+                                <p class="text-muted">Скачайте файл для чтения в подходящем приложении</p>
+                                <a href="@Url.Action("Download", "Reading", new { id = book.Id })" class="btn btn-primary">
+                                    <i class="fas fa-download me-1"></i>Скачать файл
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentZoom = 1;
+
+    function toggleFullscreen() {
+        const container = document.getElementById('reader-container');
+        if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(err => {
+                console.log('Ошибка при переходе в полноэкранный режим:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    function zoomIn() {
+        currentZoom += 0.1;
+        applyZoom();
+    }
+
+    function zoomOut() {
+        currentZoom -= 0.1;
+        if (currentZoom < 0.5) currentZoom = 0.5;
+        applyZoom();
+    }
+
+    function applyZoom() {
+        const container = document.getElementById('reader-container');
+        container.style.transform = `scale(${currentZoom})`;
+        container.style.transformOrigin = 'top left';
+    }
+
+    // Обработка клавиш
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F11') {
+            e.preventDefault();
+            toggleFullscreen();
+        } else if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            zoomIn();
+        } else if (e.key === '-') {
+            e.preventDefault();
+            zoomOut();
+        }
+    });
+
+
+    // Функция добавления в историю чтения
+    function addToHistory() {
+        if (confirm('Добавить эту книгу в историю чтения?')) {
+            const formData = new FormData();
+            formData.append('bookId', @book.Id);
+            
+            fetch('@Url.Action("StartReading", "Personal")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Книга добавлена в историю чтения!');
+                } else {
+                    alert('Ошибка при добавлении в историю');
+                }
+            })
+            .catch(() => {
+                alert('Ошибка при добавлении в историю');
+            });
+        }
+    }
+
+    // Функция добавления закладки
+    function addBookmark() {
+        const title = prompt('Название закладки:', '');
+        if (title) {
+            const description = prompt('Описание (необязательно):', '');
+            const pageNumber = prompt('Номер страницы (необязательно):', '');
+            const quote = prompt('Цитата (необязательно):', '');
+            
+            const bookmarkData = {
+                bookId: @book.Id,
+                title: title,
+                description: description || null,
+                pageNumber: pageNumber ? parseInt(pageNumber) : null,
+                quote: quote || null
+            };
+            
+            const formData = new FormData();
+            formData.append('bookId', bookmarkData.bookId);
+            formData.append('title', bookmarkData.title);
+            if (bookmarkData.description) formData.append('description', bookmarkData.description);
+            if (bookmarkData.pageNumber) formData.append('pageNumber', bookmarkData.pageNumber);
+            if (bookmarkData.quote) formData.append('quote', bookmarkData.quote);
+            
+            fetch('@Url.Action("AddBookmark", "Personal")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Закладка добавлена!');
+                } else {
+                    alert('Ошибка при добавлении закладки');
+                }
+            });
+        }
+    }
+
+</script>
+
+@Html.AntiForgeryToken()

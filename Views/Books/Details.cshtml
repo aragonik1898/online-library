@@ -1,0 +1,160 @@
+@model Library.Models.Book
+
+@{
+    ViewData["Title"] = "Детали книги";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-book me-2"></i>@Model.Title</h2>
+                <div>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Назад к каталогу
+                    </a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>Редактировать
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Обложка книги -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                {
+                    <img src="@Model.CoverImageUrl" class="card-img-top" alt="@Model.Title" style="height: 400px; object-fit: cover;">
+                }
+                else
+                {
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
+                        <i class="fas fa-book fa-5x text-muted"></i>
+                    </div>
+                }
+                <div class="card-body text-center">
+                    @if (!string.IsNullOrEmpty(Model.FileName))
+                    {
+                        <div class="d-grid gap-2">
+                            <a href="@Url.Action("Read", "Reading", new { id = Model.Id })" class="btn btn-primary btn-lg">
+                                <i class="fas fa-book-open me-2"></i>Читать онлайн
+                            </a>
+                            <a href="@Url.Action("Download", "Reading", new { id = Model.Id })" class="btn btn-success">
+                                <i class="fas fa-download me-2"></i>Скачать книгу
+                            </a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a href="@Url.Action("Upload", "Reading", new { id = Model.Id })" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-upload me-1"></i>Управление файлом
+                                </a>
+                            }
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-file me-1"></i>Файл: @Model.FileName<br>
+                                <i class="fas fa-hdd me-1"></i>Размер: @(Model.FileSize.HasValue ? $"{Model.FileSize.Value / 1024 / 1024} MB" : "Неизвестно")
+                            </small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-secondary btn-lg" disabled>
+                                <i class="fas fa-book-open me-2"></i>Чтение недоступно
+                            </button>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a href="@Url.Action("Upload", "Reading", new { id = Model.Id })" class="btn btn-primary">
+                                    <i class="fas fa-upload me-1"></i>Загрузить файл книги
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация о книге -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Информация о книге</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Название:</strong></div>
+                        <div class="col-sm-9">@Model.Title</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Автор:</strong></div>
+                        <div class="col-sm-9">
+                            <a asp-controller="Authors" asp-action="Details" asp-route-id="@Model.AuthorId" class="text-decoration-none">
+                                @Model.Author.FullName
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Жанр:</strong></div>
+                        <div class="col-sm-9">
+                            <span class="badge bg-primary">@Model.Genre.Name</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>ISBN:</strong></div>
+                        <div class="col-sm-9">@Model.ISBN</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Год издания:</strong></div>
+                        <div class="col-sm-9">@Model.PublicationYear</div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Publisher))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-sm-3"><strong>Издательство:</strong></div>
+                            <div class="col-sm-9">@Model.Publisher</div>
+                        </div>
+                    }
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Количество страниц:</strong></div>
+                        <div class="col-sm-9">@Model.PageCount</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-3"><strong>Статус:</strong></div>
+                        <div class="col-sm-9">
+                            @if (Model.IsAvailable)
+                            {
+                                <span class="badge bg-success">Доступна</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Недоступна</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-sm-3"><strong>Описание:</strong></div>
+                            <div class="col-sm-9">@Model.Description</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

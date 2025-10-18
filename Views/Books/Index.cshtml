@@ -1,0 +1,195 @@
+@model Library.Models.PagedResult<Library.Models.Book>
+
+@{
+    ViewData["Title"] = "Каталог книг";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-book me-2"></i>Каталог книг</h2>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Добавить книгу
+                    </a>
+                }
+            </div>
+
+            <!-- Фильтры -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="searchString" class="form-label">Поиск</label>
+                            <input type="text" class="form-control" id="searchString" name="searchString" 
+                                   value="@ViewBag.SearchString" placeholder="Название книги, автор...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="genreId" class="form-label">Жанр</label>
+                            <select class="form-select" id="genreId" name="genreId">
+                                <option value="">Все жанры</option>
+                                @if (ViewBag.Genres != null)
+                                {
+                                    @foreach (var genre in ViewBag.Genres)
+                                    {
+                                        <option value="@genre.Id" selected="@(ViewBag.SelectedGenreId == genre.Id)">@genre.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="authorId" class="form-label">Автор</label>
+                            <select class="form-select" id="authorId" name="authorId">
+                                <option value="">Все авторы</option>
+                                @if (ViewBag.Authors != null)
+                                {
+                                    @foreach (var author in ViewBag.Authors)
+                                    {
+                                        <option value="@author.Id" selected="@(ViewBag.SelectedAuthorId == author.Id)">@author.FullName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fas fa-search me-1"></i>Найти
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Список книг -->
+            <div class="row">
+                @if (Model.Items.Any())
+                {
+                    @foreach (var book in Model.Items)
+                    {
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                @if (!string.IsNullOrEmpty(book.CoverImageUrl))
+                                {
+                                    <img src="@book.CoverImageUrl" class="card-img-top" alt="@book.Title" style="height: 250px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                                        <i class="fas fa-book fa-4x text-muted"></i>
+                                    </div>
+                                }
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">@book.Title</h5>
+                                    <p class="card-text text-muted">
+                                        <i class="fas fa-user me-1"></i>@book.Author.FullName
+                                    </p>
+                                    <p class="card-text">
+                                        <span class="badge bg-secondary">@book.Genre.Name</span>
+                                        <span class="badge bg-info">@book.PublicationYear</span>
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(book.Description))
+                                    {
+                                        <p class="card-text small text-muted">
+                                            @(book.Description.Length > 100 ? book.Description.Substring(0, 100) + "..." : book.Description)
+                                        </p>
+                                    }
+                                    <div class="mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a asp-action="Details" asp-route-id="@book.Id" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>Подробнее
+                                            </a>
+                                            @if (User.IsInRole("Admin"))
+                                            {
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Edit" asp-route-id="@book.Id" class="btn btn-outline-secondary btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a asp-action="Delete" asp-route-id="@book.Id" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <i class="fas fa-book fa-5x text-muted mb-3"></i>
+                            <h4 class="text-muted">Книги не найдены</h4>
+                            <p class="text-muted">Попробуйте изменить параметры поиска</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Пагинация -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="mt-5 mb-4 px-3">
+                    <nav aria-label="Пагинация книг">
+                        <ul class="pagination justify-content-center">
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    searchString = ViewBag.SearchString, 
+                                    genreId = ViewBag.SelectedGenreId, 
+                                    authorId = ViewBag.SelectedAuthorId, 
+                                    page = Model.PageNumber - 1 
+                                })">
+                                    <i class="fas fa-chevron-left"></i> Предыдущая
+                                </a>
+                            </li>
+                        }
+
+                        @for (int i = Model.StartPage; i <= Model.EndPage; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    searchString = ViewBag.SearchString, 
+                                    genreId = ViewBag.SelectedGenreId, 
+                                    authorId = ViewBag.SelectedAuthorId, 
+                                    page = i 
+                                })">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { 
+                                    searchString = ViewBag.SearchString, 
+                                    genreId = ViewBag.SelectedGenreId, 
+                                    authorId = ViewBag.SelectedAuthorId, 
+                                    page = Model.PageNumber + 1 
+                                })">
+                                    Следующая <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                        </ul>
+                    </nav>
+
+                    <div class="text-center text-muted mt-3">
+                        <small>
+                            Показано @((Model.PageNumber - 1) * Model.PageSize + 1) - @(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount)) 
+                            из @Model.TotalCount книг
+                        </small>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+

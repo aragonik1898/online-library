@@ -1,0 +1,102 @@
+@startuml Database Schema
+!theme plain
+title Схема базы данных
+
+entity "Books" as Books {
+  * Id : int PK
+  --
+  Title : string
+  Description : text
+  PublicationYear : int
+  FilePath : string
+  FileName : string
+  CreatedDate : datetime
+  UpdatedDate : datetime
+  * AuthorId : int FK
+  * GenreId : int FK
+}
+
+entity "Authors" as Authors {
+  * Id : int PK
+  --
+  FirstName : string
+  LastName : string
+  Biography : text
+  CreatedDate : datetime
+}
+
+entity "Genres" as Genres {
+  * Id : int PK
+  --
+  Name : string
+  Description : text
+  CreatedDate : datetime
+}
+
+entity "Bookmarks" as Bookmarks {
+  * Id : int PK
+  --
+  Title : string
+  Description : text
+  PageNumber : int
+  Quote : text
+  CreatedDate : datetime
+  * UserId : string FK
+  * BookId : int FK
+}
+
+entity "BookLoans" as BookLoans {
+  * Id : int PK
+  --
+  LoanDate : datetime
+  DueDate : datetime
+  ReturnDate : datetime
+  * UserId : string FK
+  * BookId : int FK
+}
+
+entity "AspNetUsers" as Users {
+  * Id : string PK
+  --
+  UserName : string
+  Email : string
+  FirstName : string
+  LastName : string
+  CreatedDate : datetime
+}
+
+Books ||--|| Authors : "AuthorId"
+Books ||--|| Genres : "GenreId"
+Bookmarks ||--|| Users : "UserId"
+Bookmarks ||--|| Books : "BookId"
+BookLoans ||--|| Users : "UserId"
+BookLoans ||--|| Books : "BookId"
+
+note right of Books
+  Основная таблица книг
+  Содержит метаданные и
+  пути к файлам
+end note
+
+note right of Authors
+  Информация об авторах
+  Связь один-ко-многим с книгами
+end note
+
+note right of Genres
+  Жанры книг
+  Связь один-ко-многим с книгами
+end note
+
+note right of Bookmarks
+  Закладки пользователей
+  Связь с пользователями и книгами
+end note
+
+note right of BookLoans
+  История выдачи книг
+  Отслеживание займов
+end note
+
+@enduml
+

@@ -1,0 +1,122 @@
+﻿@{
+    ViewData["Title"] = "Электронная библиотека";
+}
+
+<div class="hero-section text-white py-5 mb-5" style="background: #007bff; position: relative; overflow: hidden;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold fade-in-up">Добро пожаловать в электронную библиотеку</h1>
+                <p class="lead fade-in-up" style="animation-delay: 0.2s;">Откройте для себя мир книг, авторов и знаний</p>
+                <div class="fade-in-up" style="animation-delay: 0.4s;">
+                    <a href="@Url.Action("Index", "Books")" class="btn btn-light btn-lg me-3">
+                        <i class="fas fa-book me-2"></i>Просмотреть каталог
+                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="@Url.Action("Bookmarks", "Personal")" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-bookmark me-2"></i>Мои закладки
+                        </a>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-book-open fa-10x opacity-75 fade-in-up" style="animation-delay: 0.6s;"></i>
+            </div>
+        </div>
+    </div>
+    <!-- Декоративные элементы -->
+    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+    <div style="position: absolute; bottom: -100px; left: -100px; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
+</div>
+
+<div class="container" style="margin-bottom: 2rem;">
+    <!-- Последние добавленные книги -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Последние добавленные книги</h2>
+            <div class="row">
+                @if (ViewBag.RecentBooks != null)
+                {
+                    @foreach (var book in ViewBag.RecentBooks)
+                    {
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 fade-in-up">
+                                @if (!string.IsNullOrEmpty(book.CoverImageUrl))
+                                {
+                                    <img src="@book.CoverImageUrl" class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                        <i class="fas fa-book fa-3x text-muted"></i>
+                                    </div>
+                                }
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">@book.Title</h5>
+                                    <p class="card-text text-muted">
+                                        <i class="fas fa-user me-1"></i>@book.Author.FullName
+                                    </p>
+                                    <p class="card-text small">
+                                        <span class="badge bg-primary">@book.Genre.Name</span>
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="@Url.Action("Details", "Books", new { id = book.Id })" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>Подробнее
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <p class="text-muted">Книги пока не добавлены в библиотеку.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Популярные жанры -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Популярные жанры</h2>
+            <div class="row justify-content-center">
+                @if (ViewBag.PopularGenres != null && ViewBag.PopularGenres.Count > 0)
+                {
+                    @foreach (var genre in ViewBag.PopularGenres)
+                    {
+                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
+                            <div class="card text-center h-100 fade-in-up">
+                                <div class="card-body d-flex flex-column justify-content-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-tags fa-2x text-primary"></i>
+                                    </div>
+                                    <h6 class="card-title mb-2">@genre.Name</h6>
+                                    <p class="card-text small text-muted mb-0">
+                                        <i class="fas fa-book me-1"></i>@genre.Books.Count книг
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Жанры пока не добавлены</h5>
+                                <p class="text-muted">Добавьте книги в библиотеку, чтобы здесь появились жанры</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

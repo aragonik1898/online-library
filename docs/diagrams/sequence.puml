@@ -1,0 +1,84 @@
+@startuml Sequence
+!theme plain
+title Диаграмма последовательности - Чтение книги
+
+actor "Пользователь" as User
+participant "Браузер" as Browser
+participant "BooksController" as Controller
+participant "ApplicationDbContext" as DbContext
+participant "FileService" as FileService
+participant "File System" as FS
+participant "PDF Viewer" as PDF
+
+== Просмотр каталога книг ==
+User -> Browser : Открыть каталог
+Browser -> Controller : GET /Books
+Controller -> DbContext : GetBooks()
+DbContext --> Controller : List<Book>
+Controller --> Browser : Books/Index View
+Browser --> User : Отображение каталога
+
+== Выбор книги для чтения ==
+User -> Browser : Клик на книгу
+Browser -> Controller : GET /Books/Details/{id}
+Controller -> DbContext : GetBook(id)
+DbContext --> Controller : Book
+Controller --> Browser : Books/Details View
+Browser --> User : Детали книги
+
+== Открытие книги для чтения ==
+User -> Browser : Клик "Читать"
+Browser -> Controller : GET /Reading/Read/{id}
+Controller -> DbContext : GetBook(id)
+DbContext --> Controller : Book
+Controller -> FileService : GetFilePath(book.FileName)
+FileService -> FS : CheckFileExists()
+FS --> FileService : File Path
+FileService --> Controller : File Path
+Controller --> Browser : Reading/Read View
+Browser --> User : PDF Viewer
+
+== Чтение книги ==
+User -> PDF : Навигация по страницам
+PDF --> User : Отображение страниц
+
+== Добавление закладки ==
+User -> Browser : Добавить закладку
+Browser -> Controller : POST /Personal/AddBookmark
+Controller -> DbContext : CreateBookmark()
+DbContext --> Controller : Success
+Controller --> Browser : Redirect to Bookmarks
+Browser --> User : Обновленный список закладок
+
+== Обработка ошибок ==
+alt Файл не найден
+    FileService -> FS : CheckFileExists()
+    FS --> FileService : File Not Found
+    FileService --> Controller : Error
+    Controller --> Browser : Error View
+    Browser --> User : Сообщение об ошибке
+end
+
+note right of User
+  Пользователь может:
+  - Просматривать каталог
+  - Выбирать книги
+  - Читать PDF файлы
+  - Добавлять закладки
+end note
+
+note right of Controller
+  BooksController обрабатывает:
+  - Список книг
+  - Детали книги
+  - Поиск и фильтрацию
+end note
+
+note right of FileService
+  FileService управляет:
+  - Загрузкой файлов
+  - Проверкой существования
+  - Получением путей к файлам
+end note
+
+@enduml

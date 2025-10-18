@@ -1,0 +1,54 @@
+@startuml Architecture
+!theme plain
+title Архитектура Электронной библиотеки
+
+package "MVC Layer" {
+    [Controllers] as Controllers
+    [Views] as Views
+    [Static Files] as Static
+}
+
+package "Business Layer" {
+    [Services] as Services
+    [Models] as Models
+}
+
+package "Data Layer" {
+    [DbContext] as DbContext
+    database "SQLite" as DB
+}
+
+package "External" {
+    [File System] as FS
+    [Identity] as Identity
+}
+
+Controllers --> Models
+Controllers --> Services
+Controllers --> DbContext
+Views --> Controllers
+Services --> DbContext
+Services --> FS
+DbContext --> DB
+Controllers --> Identity
+
+note right of Controllers
+  BooksController
+  AuthorsController
+  PersonalController
+  ReadingController
+  AccountController
+end note
+
+note right of Services
+  FileService
+  PaginationService
+end note
+
+note right of Models
+  Book, Author, Genre
+  Bookmark, BookLoan
+  ApplicationUser
+end note
+
+@enduml

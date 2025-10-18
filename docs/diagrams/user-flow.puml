@@ -1,0 +1,76 @@
+@startuml User Flow
+!theme plain
+title Пользовательские сценарии
+
+actor "Пользователь" as User
+participant "Главная страница" as Home
+participant "Каталог книг" as Books
+participant "Авторы" as Authors
+participant "Личный кабинет" as Personal
+participant "Чтение" as Reading
+participant "Аутентификация" as Auth
+
+== Регистрация и вход ==
+User -> Auth : Переход на страницу входа
+Auth -> Auth : Ввод email/пароля
+Auth -> User : Успешный вход
+
+== Просмотр каталога ==
+User -> Home : Открытие главной страницы
+Home -> Books : Переход в каталог
+Books -> Books : Просмотр списка книг
+Books -> Books : Пагинация
+Books -> Books : Детали книги
+
+== Работа с авторами ==
+User -> Authors : Переход к авторам
+Authors -> Authors : Просмотр списка авторов
+Authors -> Authors : Детали автора
+Authors -> Books : Книги автора
+
+== Личные функции ==
+User -> Personal : Переход в личный кабинет
+Personal -> Personal : Просмотр закладок
+Personal -> Personal : Добавление закладки
+Personal -> Personal : Редактирование закладки
+Personal -> Personal : Удаление закладки
+
+== Чтение книг ==
+User -> Books : Выбор книги для чтения
+Books -> Reading : Открытие книги
+Reading -> Reading : Просмотр PDF
+Reading -> Personal : Добавление закладки
+Reading -> Reading : Навигация по страницам
+
+== Управление профилем ==
+User -> Auth : Переход в профиль
+Auth -> Auth : Просмотр информации
+Auth -> Auth : Редактирование данных
+Auth -> Auth : Сохранение изменений
+
+note right of User
+  Пользователь может:
+  - Просматривать каталог
+  - Читать книги
+  - Управлять закладками
+  - Редактировать профиль
+end note
+
+note right of Books
+  Функции каталога:
+  - Поиск книг
+  - Фильтрация по жанрам
+  - Пагинация
+  - Детальная информация
+end note
+
+note right of Reading
+  Возможности чтения:
+  - Просмотр PDF
+  - Добавление закладок
+  - Навигация по страницам
+  - Поиск по тексту
+end note
+
+@enduml
+

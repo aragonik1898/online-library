@@ -1,0 +1,123 @@
+@startuml Use Case
+!theme plain
+title Use Case диаграмма - Электронная библиотека
+
+left to right direction
+
+actor "Гость" as Guest
+actor "Пользователь" as User
+actor "Администратор" as Admin
+
+rectangle "Электронная библиотека" {
+    
+    package "Публичные функции" {
+        usecase "Просмотр каталога книг" as UC1
+        usecase "Поиск книг" as UC2
+        usecase "Просмотр деталей книги" as UC3
+        usecase "Просмотр авторов" as UC4
+        usecase "Просмотр жанров" as UC5
+        usecase "Регистрация" as UC6
+        usecase "Вход в систему" as UC7
+    }
+    
+    package "Пользовательские функции" {
+        usecase "Чтение книг" as UC8
+        usecase "Добавление закладок" as UC9
+        usecase "Управление закладками" as UC10
+        usecase "Просмотр профиля" as UC11
+        usecase "Редактирование профиля" as UC12
+        usecase "Просмотр истории чтения" as UC13
+    }
+    
+    package "Административные функции" {
+        usecase "Добавление книг" as UC14
+        usecase "Редактирование книг" as UC15
+        usecase "Удаление книг" as UC16
+        usecase "Добавление авторов" as UC17
+        usecase "Редактирование авторов" as UC18
+        usecase "Добавление жанров" as UC19
+        usecase "Управление пользователями" as UC20
+    }
+}
+
+' Связи для гостя
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+Guest --> UC6
+Guest --> UC7
+
+' Связи для пользователя
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC8
+User --> UC9
+User --> UC10
+User --> UC11
+User --> UC12
+User --> UC13
+
+' Связи для администратора
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+Admin --> UC19
+Admin --> UC20
+
+' Наследование ролей
+User --|> Guest
+Admin --|> User
+
+' Включения
+UC2 ..> UC1 : <<include>>
+UC3 ..> UC1 : <<include>>
+UC8 ..> UC3 : <<include>>
+UC9 ..> UC8 : <<include>>
+UC10 ..> UC9 : <<include>>
+
+' Расширения
+UC7 ..> UC6 : <<extend>>
+UC12 ..> UC11 : <<extend>>
+
+note right of Guest
+  Гость может:
+  - Просматривать каталог
+  - Искать книги
+  - Регистрироваться
+  - Входить в систему
+end note
+
+note right of User
+  Пользователь может:
+  - Все функции гостя
+  - Читать книги
+  - Управлять закладками
+  - Редактировать профиль
+end note
+
+note right of Admin
+  Администратор может:
+  - Все функции пользователя
+  - Управлять контентом
+  - Управлять пользователями
+end note
+
+@enduml

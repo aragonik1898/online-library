@@ -1,0 +1,82 @@
+@model Library.Models.Book
+
+@{
+    ViewData["Title"] = "Удалить книгу";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-trash me-2"></i>Удалить книгу</h2>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Назад к каталогу
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Подтверждение удаления
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Внимание!</strong> Вы уверены, что хотите удалить эту книгу? Это действие нельзя отменить.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            @if (!string.IsNullOrEmpty(Model.CoverImageUrl))
+                            {
+                                <img src="@Model.CoverImageUrl" class="img-fluid rounded" alt="@Model.Title">
+                            }
+                            else
+                            {
+                                <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 200px;">
+                                    <i class="fas fa-book fa-3x text-muted"></i>
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <h5>@Model.Title</h5>
+                            <p class="text-muted">
+                                <i class="fas fa-user me-1"></i>@Model.Author.FullName
+                            </p>
+                            <p class="text-muted">
+                                <i class="fas fa-tag me-1"></i>@Model.Genre.Name
+                            </p>
+                            <p class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>@Model.PublicationYear
+                            </p>
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                <p class="small">@(Model.Description.Length > 150 ? Model.Description.Substring(0, 150) + "..." : Model.Description)</p>
+                            }
+                        </div>
+                    </div>
+                    
+                    <form asp-action="Delete" method="post" class="mt-4">
+                        <input asp-for="Id" type="hidden" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Отмена
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>Да, удалить книгу
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
